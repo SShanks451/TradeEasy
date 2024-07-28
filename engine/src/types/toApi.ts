@@ -1,5 +1,6 @@
 export const ORDER_PLACED = "ORDER_PLACED";
 export const DEPTH = "DEPTH";
+export const ORDER_CANCELLED = "ORDER_CANCELLED";
 
 export type MessageToApi =
   | {
@@ -19,5 +20,13 @@ export type MessageToApi =
       payload: {
         bids: [string, string][];
         asks: [string, string][];
+      };
+    }
+  | {
+      type: typeof ORDER_CANCELLED;
+      payload: {
+        orderId: string;
+        executedQty: string;
+        remainingQty: string;
       };
     };

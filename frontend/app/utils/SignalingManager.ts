@@ -38,7 +38,6 @@ export class SignalingManager {
 
     this.ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      console.log("frontend ws msg: ", message);
       const type = message.data.e;
 
       if (this.callbacks[type]) {

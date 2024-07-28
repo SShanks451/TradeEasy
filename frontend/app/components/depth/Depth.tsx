@@ -14,7 +14,6 @@ export function Depth({ market }: { market: string }) {
     SignalingManager.getInstance().registerCallback(
       "depth",
       (data: any) => {
-        console.log("depth data: ", data);
         setBids((originalBids) => {
           const updatedBids = [...(originalBids || [])];
 
@@ -33,7 +32,7 @@ export function Depth({ market }: { market: string }) {
                 break;
               }
             }
-            if (!isNewBidAdded) {
+            if (!isNewBidAdded && Number(data.bids[j][1]) !== 0) {
               updatedBids.push(data.bids[j]);
             }
           }
@@ -59,7 +58,7 @@ export function Depth({ market }: { market: string }) {
                 break;
               }
             }
-            if (!isNewAskAdded) {
+            if (!isNewAskAdded && Number(data.asks[j][1]) !== 0) {
               updatedAsks.push(data.asks[j]);
             }
           }

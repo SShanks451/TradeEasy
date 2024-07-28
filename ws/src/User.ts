@@ -20,7 +20,7 @@ export class User {
   }
 
   public unsubscribe(subscription: string) {
-    this.subscriptions = this.subscriptions.filter((s) => s != subscription);
+    this.subscriptions = this.subscriptions.filter((s) => s !== subscription);
   }
 
   emit(message: OutgoingMessage) {

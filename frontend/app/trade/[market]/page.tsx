@@ -9,22 +9,18 @@ export default function Page() {
   const { market } = useParams();
 
   return (
-    <div className="flex flex-row flex-1">
-      <div className="flex flex-col flex-1">
-        <MarketBar market={market as string} />
-        <div className="flex flex-row h-[620px] border-y border-slate-800">
-          <div className="flex flex-col flex-1">
-            <TradeView market={market as string} />
-          </div>
-          <div className="w-[1px] flex-col border-slate-800 border-l"></div>
-          <div className="flex flex-col w-[250px] overflow-hidden">
-            <Depth market={market as string} />
-          </div>
-        </div>
-      </div>
-      <div className="w-[1px] flex-col border-slate-800 border-l"></div>
+    <div>
       <div>
-        <div className="flex flex-col w-[250px]">
+        <MarketBar market={market as string} />
+      </div>
+      <div className="flex w-[100%]">
+        <div className="w-[60%] border-r border-b border-slate-800">
+          <TradeView market={market as string} />
+        </div>
+        <div className="w-[20%] border-b border-slate-800">
+          <Depth market={market as string} />
+        </div>
+        <div className="w-[20%] border-l border-b border-slate-800">
           <SwapUI market={market as string} />
         </div>
       </div>

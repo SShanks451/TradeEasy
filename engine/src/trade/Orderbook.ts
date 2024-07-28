@@ -16,12 +16,12 @@ export interface Fill {
 }
 
 export class Orderbook {
-  private bids: Order[];
-  private asks: Order[];
-  private baseAsset: string;
-  private quoteAsset: string;
-  private lastTradeId: number;
-  private currentPrice: number;
+  bids: Order[];
+  asks: Order[];
+  baseAsset: string;
+  quoteAsset: string;
+  lastTradeId: number;
+  currentPrice: number;
 
   constructor(bids: Order[], asks: Order[], baseAsset: string, quoteAsset: string, lastTradeId: number, currentPrice: number) {
     this.bids = bids;
@@ -94,10 +94,10 @@ export class Orderbook {
         });
       }
 
-      // if (this.asks[i].filled === this.asks[i].quantity) {
-      //   this.asks.splice(i, 1);
-      //   i--;
-      // }
+      if (this.asks[i].filled === this.asks[i].quantity) {
+        this.asks.splice(i, 1);
+        i--;
+      }
     }
 
     return {
@@ -132,10 +132,10 @@ export class Orderbook {
         });
       }
 
-      // if (this.bids[i].filled === this.bids[i].quantity) {
-      //   this.bids.splice(i, 1);
-      //   i--;
-      // }
+      if (this.bids[i].filled === this.bids[i].quantity) {
+        this.bids.splice(i, 1);
+        i--;
+      }
     }
 
     return {
@@ -181,5 +181,23 @@ export class Orderbook {
       bids,
       asks,
     };
+  }
+
+  cancelBid(order: Order) {
+    const orderIndex = this.bids.findIndex((b) => b.orderId === order.orderId);
+    if (orderIndex != -1) {
+      const price = this.bids[orderIndex].price;
+      this.bids.splice(orderIndex, 1);
+      return price;
+    }
+  }
+
+  cancelAsk(order: Order) {
+    const orderIndex = this.asks.findIndex((a) => a.orderId === order.orderId);
+    if (orderIndex != -1) {
+      const price = this.asks[orderIndex].price;
+      this.asks.splice(orderIndex, 1);
+      return price;
+    }
   }
 }

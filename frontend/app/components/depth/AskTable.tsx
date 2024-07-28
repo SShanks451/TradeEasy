@@ -1,4 +1,5 @@
 export const AskTable = ({ asks }: { asks: [string, string][] }) => {
+  console.log("asks: ", asks);
   asks.sort((a, b) => {
     let firstNum = parseFloat(a[0]);
     let secondNum = parseFloat(b[0]);

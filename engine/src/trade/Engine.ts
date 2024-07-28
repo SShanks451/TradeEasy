@@ -1,5 +1,6 @@
 import { RedisManager } from "../RedisManager";
-import { CREATE_ORDER, GET_DEPTH, MessageFromApi } from "../types/fromApi";
+import { CANCEL_ORDER, CREATE_ORDER, GET_DEPTH, MessageFromApi } from "../types/fromApi";
+import { DEPTH, ORDER_CANCELLED, ORDER_PLACED } from "../types/toApi";
 import { Order, Orderbook, Fill } from "./Orderbook";
 
 interface UserBalance {
@@ -23,22 +24,81 @@ export class Engine {
   process({ clientId, message }: { clientId: string; message: MessageFromApi }) {
     switch (message.type) {
       case CREATE_ORDER:
-        const { orderId, executedQty, fills } = this.createOrder(
-          message.data.market,
-          message.data.price,
-          message.data.quantity,
-          message.data.side,
-          message.data.userId
-        );
+        try {
+          const { orderId, executedQty, fills } = this.createOrder(
+            message.data.market,
+            message.data.price,
+            message.data.quantity,
+            message.data.side,
+            message.data.userId
+          );
 
-        RedisManager.getInstance().sendToApi(clientId, {
-          type: "ORDER_PLACED",
-          payload: {
-            orderId,
-            executedQty,
-            fills,
-          },
-        });
+          RedisManager.getInstance().sendToApi(clientId, {
+            type: ORDER_PLACED,
+            payload: {
+              orderId,
+              executedQty,
+              fills,
+            },
+          });
+        } catch (e) {}
+
+        break;
+
+      case CANCEL_ORDER:
+        try {
+          const orderId = message.data.orderId;
+          const cancelMarket = message.data.market;
+          const cancelOrderbook = this.orderbooks.find((o) => o.ticker() === cancelMarket);
+          if (!cancelOrderbook) {
+            throw new Error("Orderbook not found for this market");
+          }
+
+          const baseAsset = cancelMarket.split("_")[0];
+          const quoteAsset = cancelMarket.split("_")[1];
+          const order = cancelOrderbook.asks.find((a) => a.orderId === orderId) || cancelOrderbook.bids.find((b) => b.orderId === orderId);
+          if (!order) {
+            throw new Error("No order found");
+          }
+
+          if (order.side === "buy") {
+            const price = cancelOrderbook.cancelBid(order);
+            const leftQuantity = (order.quantity - order.filled) * order.price;
+            //@ts-ignore
+            this.balances.get(order.userId)[baseAsset].available += leftQuantity;
+            //@ts-ignore
+            this.balances.get(order.userId)[baseAsset].locked -= leftQuantity;
+
+            if (price) {
+              this.sendUpdatedDepthAt(price.toString(), cancelMarket);
+            }
+          }
+
+          if (order.side === "sell") {
+            const price = cancelOrderbook.cancelAsk(order);
+            const leftQuantity = order.quantity - order.filled;
+            //@ts-ignore
+            this.balances.get(order.userId)[quoteAsset].available += leftQuantity;
+            //@ts-ignore
+            this.balances.get(order.userId)[quoteAsset].locked -= leftQuantity;
+
+            if (price) {
+              this.sendUpdatedDepthAt(price.toString(), cancelMarket);
+            }
+          }
+
+          RedisManager.getInstance().sendToApi(clientId, {
+            type: ORDER_CANCELLED,
+            payload: {
+              orderId,
+              executedQty: "0",
+              remainingQty: "0",
+            },
+          });
+        } catch (e) {}
+
+        break;
+
       case GET_DEPTH:
         const market = message.data.market;
         const orderbook = this.orderbooks.find((o) => o.ticker() === market);
@@ -47,9 +107,11 @@ export class Engine {
         }
 
         RedisManager.getInstance().sendToApi(clientId, {
-          type: "DEPTH",
+          type: DEPTH,
           payload: orderbook.getDepth(),
         });
+
+        break;
     }
   }
 
@@ -143,9 +205,21 @@ export class Engine {
 
     if (side === "buy") {
       const updatedAsks = depth.asks.filter((x) => fills.map((f) => f.price).includes(x[0]));
+      for (let i = 0; i < fills.length; i++) {
+        let isPresent = false;
+        for (let j = 0; j < updatedAsks.length; j++) {
+          if (updatedAsks[j][0] === fills[i].price) {
+            isPresent = true;
+            break;
+          }
+        }
+        if (!isPresent) {
+          updatedAsks.push([fills[i].price, "0"]);
+        }
+      }
+
       const updatedBids = depth.bids.find((x) => x[0] === price);
-      console.log("uypdatedAsks: ", updatedAsks);
-      console.log("updatedBids: ", updatedBids);
+
       RedisManager.getInstance().publishMessage(`depth@${market}`, {
         stream: `depth@${market}`,
         data: {
@@ -157,7 +231,20 @@ export class Engine {
     }
     if (side === "sell") {
       const updatedAsks = depth.asks.find((x) => x[0] === price);
+
       const updatedBids = depth.bids.filter((x) => fills.map((f) => f.price).includes(x[0]));
+      for (let i = 0; i < fills.length; i++) {
+        let isPresent = false;
+        for (let j = 0; j < updatedBids.length; j++) {
+          if (updatedBids[j][0] === fills[i].price) {
+            isPresent = true;
+            break;
+          }
+        }
+        if (!isPresent) {
+          updatedBids.push([fills[i].price, "0"]);
+        }
+      }
 
       RedisManager.getInstance().publishMessage(`depth@${market}`, {
         stream: `depth@${market}`,
@@ -168,6 +255,25 @@ export class Engine {
         },
       });
     }
+  }
+
+  sendUpdatedDepthAt(price: string, market: string) {
+    const orderbook = this.orderbooks.find((o) => o.ticker() === market);
+    if (!orderbook) {
+      return;
+    }
+    const depth = orderbook.getDepth();
+    const updatedBids = depth.bids.filter((b) => b[0] === price);
+    const updatedAsks = depth.asks.filter((a) => a[0] === price);
+
+    RedisManager.getInstance().publishMessage(`depth@${market}`, {
+      stream: `depth@${market}`,
+      data: {
+        b: updatedBids.length ? updatedBids : [[price, "0"]],
+        a: updatedAsks.length ? updatedAsks : [[price, "0"]],
+        e: "depth",
+      },
+    });
   }
 
   setBaseBalances() {

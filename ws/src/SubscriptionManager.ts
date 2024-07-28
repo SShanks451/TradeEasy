@@ -56,14 +56,14 @@ export class SubscriptionManager {
     if (subscriptions) {
       this.subscriptions.set(
         userId,
-        subscriptions.filter((s) => s != subscription)
+        subscriptions.filter((s) => s !== subscription)
       );
     }
     const reverseSubscriptions = this.reverseSubscriptions.get(subscription);
     if (reverseSubscriptions) {
       this.reverseSubscriptions.set(
         subscription,
-        reverseSubscriptions.filter((r) => r != userId)
+        reverseSubscriptions.filter((r) => r !== userId)
       );
       if (this.reverseSubscriptions.get(subscription)?.length === 0) {
         this.reverseSubscriptions.delete(subscription);
