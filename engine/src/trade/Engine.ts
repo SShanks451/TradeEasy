@@ -1,6 +1,6 @@
 import { RedisManager } from "../RedisManager";
-import { CANCEL_ORDER, CREATE_ORDER, GET_DEPTH, MessageFromApi } from "../types/fromApi";
-import { DEPTH, ORDER_CANCELLED, ORDER_PLACED } from "../types/toApi";
+import { CANCEL_ORDER, CREATE_ORDER, GET_DEPTH, GET_OPEN_ORDERS, MessageFromApi } from "../types/fromApi";
+import { DEPTH, OPEN_ORDERS, ORDER_CANCELLED, ORDER_PLACED } from "../types/toApi";
 import { Order, Orderbook, Fill } from "./Orderbook";
 
 interface UserBalance {
@@ -109,6 +109,21 @@ export class Engine {
         RedisManager.getInstance().sendToApi(clientId, {
           type: DEPTH,
           payload: orderbook.getDepth(),
+        });
+
+        break;
+
+      case GET_OPEN_ORDERS:
+        const openOrderbook = this.orderbooks.find((o) => o.ticker() === message.data.market);
+        if (!openOrderbook) {
+          throw new Error("Orderbook not found");
+        }
+
+        const openOrders = openOrderbook.getOpenOrders(message.data.userId);
+
+        RedisManager.getInstance().sendToApi(clientId, {
+          type: OPEN_ORDERS,
+          payload: openOrders,
         });
 
         break;

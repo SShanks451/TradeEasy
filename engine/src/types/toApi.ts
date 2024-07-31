@@ -1,6 +1,7 @@
 export const ORDER_PLACED = "ORDER_PLACED";
 export const DEPTH = "DEPTH";
 export const ORDER_CANCELLED = "ORDER_CANCELLED";
+export const OPEN_ORDERS = "OPEN_ORDERS";
 
 export type MessageToApi =
   | {
@@ -29,4 +30,15 @@ export type MessageToApi =
         executedQty: string;
         remainingQty: string;
       };
+    }
+  | {
+      type: typeof OPEN_ORDERS;
+      payload: {
+        price: number;
+        quantity: number;
+        orderId: string;
+        filled: number;
+        side: "buy" | "sell";
+        userId: string;
+      }[];
     };

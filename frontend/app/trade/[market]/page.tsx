@@ -1,5 +1,6 @@
 "use client";
 import { MarketBar } from "@/app/components/MarketBar";
+import OpenOrders from "@/app/components/OpenOrders";
 import { SwapUI } from "@/app/components/SwapUI";
 import { TradeView } from "@/app/components/TradeView";
 import { Depth } from "@/app/components/depth/Depth";
@@ -7,7 +8,7 @@ import { useParams } from "next/navigation";
 
 export default function Page() {
   const { market } = useParams();
-
+  console.log(market);
   return (
     <div>
       <div>
@@ -23,6 +24,9 @@ export default function Page() {
         <div className="w-[20%] border-l border-b border-slate-800">
           <SwapUI market={market as string} />
         </div>
+      </div>
+      <div>
+        <OpenOrders />
       </div>
     </div>
   );
