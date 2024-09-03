@@ -7,7 +7,6 @@ export type TickerUpdateMessage = {
     v?: string;
     V?: string;
     s?: string;
-    id: number;
     e: "ticker";
   };
 };
@@ -17,7 +16,6 @@ export type DepthUpdateMessage = {
   data: {
     b?: [string, string][];
     a?: [string, string][];
-    id: number;
     e: "depth";
   };
 };

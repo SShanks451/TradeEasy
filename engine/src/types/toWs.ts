@@ -7,4 +7,17 @@ type DepthUpdateMessage = {
   };
 };
 
-export type WsMessage = DepthUpdateMessage;
+type TickerUpdateMessage = {
+  stream: string;
+  data: {
+    c?: string;
+    h?: string;
+    l?: string;
+    v?: string;
+    V?: string;
+    s?: string;
+    e: "ticker";
+  };
+};
+
+export type WsMessage = DepthUpdateMessage | TickerUpdateMessage;

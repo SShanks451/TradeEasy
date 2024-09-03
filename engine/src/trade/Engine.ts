@@ -1,6 +1,6 @@
 import { RedisManager } from "../RedisManager";
-import { CANCEL_ORDER, CREATE_ORDER, GET_DEPTH, GET_OPEN_ORDERS, MessageFromApi } from "../types/fromApi";
-import { DEPTH, OPEN_ORDERS, ORDER_CANCELLED, ORDER_PLACED } from "../types/toApi";
+import { CANCEL_ORDER, CREATE_ORDER, GET_DEPTH, GET_OPEN_ORDERS, GET_TICKER, MessageFromApi } from "../types/fromApi";
+import { DEPTH, OPEN_ORDERS, ORDER_CANCELLED, ORDER_PLACED, TICKER } from "../types/toApi";
 import { Order, Orderbook, Fill } from "./Orderbook";
 
 interface UserBalance {
@@ -127,6 +127,25 @@ export class Engine {
         });
 
         break;
+
+      case GET_TICKER:
+        const tickerOrderbook = this.orderbooks.find((o) => o.ticker() === message.data.market);
+        if (!tickerOrderbook) {
+          throw new Error("Orderbook not found");
+        }
+
+        const currentPrice = tickerOrderbook.getTicker().toString();
+
+        this.publishWsTickerUpdates(message.data.market, currentPrice);
+
+        RedisManager.getInstance().sendToApi(clientId, {
+          type: TICKER,
+          payload: {
+            lastPrice: currentPrice,
+          },
+        });
+
+        break;
     }
   }
 
@@ -244,6 +263,7 @@ export class Engine {
         },
       });
     }
+
     if (side === "sell") {
       const updatedAsks = depth.asks.find((x) => x[0] === price);
 
@@ -270,6 +290,16 @@ export class Engine {
         },
       });
     }
+  }
+
+  publishWsTickerUpdates(market: string, price: string) {
+    RedisManager.getInstance().publishMessage(`ticker@${market}`, {
+      stream: `ticker@${market}`,
+      data: {
+        c: price,
+        e: "ticker",
+      },
+    });
   }
 
   sendUpdatedDepthAt(price: string, market: string) {

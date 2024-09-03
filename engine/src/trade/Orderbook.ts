@@ -92,6 +92,8 @@ export class Orderbook {
           otherUserId: this.asks[i].userId,
           markerOrderId: this.asks[i].orderId,
         });
+        this.currentPrice = this.asks[i].price;
+        console.log("current", this.currentPrice);
       }
 
       if (this.asks[i].filled === this.asks[i].quantity) {
@@ -130,6 +132,7 @@ export class Orderbook {
           otherUserId: this.bids[i].userId,
           markerOrderId: this.bids[i].orderId,
         });
+        this.currentPrice = this.bids[i].price;
       }
 
       if (this.bids[i].filled === this.bids[i].quantity) {
@@ -205,5 +208,9 @@ export class Orderbook {
     const asks = this.asks.filter((a) => a.userId === userId);
     const bids = this.bids.filter((b) => b.userId === userId);
     return [...asks, ...bids];
+  }
+
+  getTicker() {
+    return this.currentPrice;
   }
 }

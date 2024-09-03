@@ -51,14 +51,14 @@ export class SignalingManager {
 
           if (type === "ticker") {
             const newTicker: Partial<Ticker> = {
-              firstPrice: message.data.o,
-              high: message.data.h,
+              // firstPrice: message.data.o,
+              // high: message.data.h,
               lastPrice: message.data.c,
-              low: message.data.l,
-              quoteVolume: message.data.V,
-              symbol: message.data.s,
-              trades: message.data.n,
-              volume: message.data.v,
+              // low: message.data.l,
+              // quoteVolume: message.data.V,
+              // symbol: message.data.s,
+              // trades: message.data.n,
+              // volume: message.data.v,
             };
 
             callback(newTicker);
@@ -92,7 +92,7 @@ export class SignalingManager {
 
   async deRegisterCallback(type: string, id: string) {
     if (this.callbacks[type]) {
-      const ind = this.callbacks[type].findIndex((callback) => callback.id === id);
+      const ind = this.callbacks[type].findIndex((callback: any) => callback.id === id);
       if (ind !== -1) {
         this.callbacks[type].splice(ind, 1);
       }

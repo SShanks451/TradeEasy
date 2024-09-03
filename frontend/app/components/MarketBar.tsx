@@ -5,36 +5,35 @@ import { getTicker } from "../utils/httpClient";
 import { SignalingManager } from "../utils/SignalingManager";
 
 export const MarketBar = ({ market }: { market: string }) => {
-  /*
   const [ticker, setTicker] = useState<Ticker | null>(null);
 
   useEffect(() => {
-    getTicker(market).then(setTicker);
-
     SignalingManager.getInstance().registerCallback(
       "ticker",
-      (data: Partial<Ticker>) => {
+      (data: any) => {
         setTicker((prevTicker) => ({
-          firstPrice: data?.firstPrice ?? prevTicker?.firstPrice ?? "",
-          high: data?.high ?? prevTicker?.high ?? "",
+          // firstPrice: data?.firstPrice ?? prevTicker?.firstPrice ?? "",
+          // high: data?.high ?? prevTicker?.high ?? "",
           lastPrice: data?.lastPrice ?? prevTicker?.lastPrice ?? "",
-          low: data?.low ?? prevTicker?.low ?? "",
-          priceChange: data?.priceChange ?? prevTicker?.priceChange ?? "",
-          priceChangePercent: data?.priceChangePercent ?? prevTicker?.priceChangePercent ?? "",
-          quoteVolume: data?.quoteVolume ?? prevTicker?.quoteVolume ?? "",
-          symbol: data?.symbol ?? prevTicker?.symbol ?? "",
-          trades: data?.trades ?? prevTicker?.trades ?? "",
-          volume: data?.volume ?? prevTicker?.volume ?? "",
+          // low: data?.low ?? prevTicker?.low ?? "",
+          // priceChange: data?.priceChange ?? prevTicker?.priceChange ?? "",
+          // priceChangePercent: data?.priceChangePercent ?? prevTicker?.priceChangePercent ?? "",
+          // quoteVolume: data?.quoteVolume ?? prevTicker?.quoteVolume ?? "",
+          // symbol: data?.symbol ?? prevTicker?.symbol ?? "",
+          // trades: data?.trades ?? prevTicker?.trades ?? "",
+          // volume: data?.volume ?? prevTicker?.volume ?? "",
         }));
       },
       `TICKER-${market}`
     );
 
-    SignalingManager.getInstance().sendMessage({ method: "SUBSCRIBE", params: [`ticker.${market}`] });
+    SignalingManager.getInstance().sendMessage({ method: "SUBSCRIBE", params: [`ticker@${market}`] });
+
+    getTicker(market).then((res) => setTicker(res));
 
     return () => {
       SignalingManager.getInstance().deRegisterCallback("ticker", `TICKER-${market}`);
-      SignalingManager.getInstance().sendMessage({ method: "UNSUBSCRIBE", params: [`ticker.${market}`] });
+      SignalingManager.getInstance().sendMessage({ method: "UNSUBSCRIBE", params: [`ticker@${market}`] });
     };
   }, [market]);
 
@@ -77,11 +76,8 @@ export const MarketBar = ({ market }: { market: string }) => {
       </div>
     </div>
   );
-  */
-  return <div>x</div>;
 };
 
-/*
 function Ticker({ market }: { market: string }) {
   return (
     <div className="flex h-[60px] shrink-0 space-x-4">
@@ -108,4 +104,3 @@ function Ticker({ market }: { market: string }) {
     </div>
   );
 }
-  */

@@ -9,9 +9,6 @@ const MARKET = "SOL_USDC";
 
 const OpenOrders = () => {
   const [openOrders, setOpenOrders] = useState([]);
-  if (openOrders.length > 0) {
-    console.log(openOrders);
-  }
 
   useEffect(() => {
     async function getOpenOrders() {

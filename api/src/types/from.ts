@@ -2,6 +2,7 @@ export const ORDER_PLACED = "ORDER_PLACED";
 export const DEPTH = "DEPTH";
 export const ORDER_CANCELLED = "ORDER_CANCELLED";
 export const OPEN_ORDERS = "OPEN_ORDERS";
+export const TICKER = "TICKER";
 
 export type MessageFromEngine =
   | {
@@ -41,4 +42,10 @@ export type MessageFromEngine =
         side: "buy" | "sell";
         userId: string;
       }[];
+    }
+  | {
+      type: typeof TICKER;
+      payload: {
+        lastPrice: string;
+      };
     };
